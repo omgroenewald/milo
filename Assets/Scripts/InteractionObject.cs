@@ -7,27 +7,40 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class InteractionObject
+    
+    public class InteractionObject : MonoBehaviour
     {
-        public InteractionObject()
-        {
-            RequiredForUse = new List<InteractionObject>();
-        }
-        public string Id { get; set; }
-        public bool Owned { get; set; }
-        public bool CanUse { get; set; }
-        public bool CanPickUp { get; set; }
-        public bool KeepAfterUse { get; set; }
+        private List<InteractionObject> requirements = new List<InteractionObject>();
+
+        public string Ident => this.tag;
+        public bool Owned;
+        public bool CanUse;
+        public bool CanPickUp;
+        public bool KeepAfterUse;
+        [HideInInspector]
+        public bool Used;
         public bool CanUse2 => !RequiredForUse.Any(_ => !_.Owned);
-        public bool ShouldRotate { get; set; }
-        public bool EndLevel { get; set; }
-        public Sprite Sprite { get; set; }
-        public List<InteractionObject> RequiredForUse {get;set;}
-        public void Use()
+        public bool ShouldRotate;
+        public bool EndLevel;
+        public Sprite Sprite;
+        public List<InteractionObject> RequiredForUse = new List<InteractionObject>();
+        public bool Use()
         {
-            RequiredForUse.ForEach(_ => _.Owned = _.Owned && _.KeepAfterUse);
+            if (RequiredForUse.Any(_ => !_.Owned))
+                return false;
+            RequiredForUse.ForEach(_ => _.Used = _.Owned && _.KeepAfterUse);
+            RequiredForUse.ForEach(_ => {
+
+                _.Used = _.Owned && !_.KeepAfterUse;
+                _.Owned = _.Owned && _.KeepAfterUse;
+            });
             if (CanPickUp && !Owned)
+            {
                 Owned = true;
+               //set render disabled to pick up item
+                GetComponentInParent<Renderer>().enabled = false;
+             }
+            return true;
         }
         
 
