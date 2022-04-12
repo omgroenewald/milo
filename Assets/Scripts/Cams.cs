@@ -11,6 +11,7 @@ public class Cams : MonoBehaviour
 
     public Transform player;
     public Transform camaras;
+    public Transform ROb;
     public Transform weapon;
     public UnityEvent HAClick;
 
@@ -49,8 +50,8 @@ public class Cams : MonoBehaviour
             sety();
             setx();
             RaycastHit rayCastHit;
-            Debug.DrawRay(camaras.transform.position, camaras.TransformDirection(Vector3.forward), Color.green);
-            var hover = Physics.Raycast(camaras.transform.position, camaras.TransformDirection(Vector3.forward), out rayCastHit, 1f, LayerMask.GetMask("UI"));
+            Debug.DrawRay(ROb.transform.position, ROb.TransformDirection(Vector3.forward), Color.green);
+            var hover = Physics.Raycast(ROb.transform.position, ROb.TransformDirection(Vector3.forward), out rayCastHit, 2f, LayerMask.GetMask("UI"));
             if (rayCastHit.collider!= null)
             {
                 isHit = true;

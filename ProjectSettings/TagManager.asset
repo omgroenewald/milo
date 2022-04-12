@@ -8,6 +8,7 @@ TagManager:
   - KeyMainDoor
   - MainDoor
   - DrawerA
+  - UIDisplayText
   layers:
   - Default
   - TransparentFX

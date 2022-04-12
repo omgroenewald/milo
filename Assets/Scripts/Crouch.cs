@@ -15,7 +15,14 @@ public class Crouch : MonoBehaviour
 
     private bool _crouchPressed = false;
     private bool _crouchUnPressed = false;
-    
+    private Vector3 _originalScale;
+    private Vector3 _crouchedScale;
+
+    public void Start()
+    {
+        _originalScale = Player.transform.localScale;
+        _crouchedScale = Player.transform.localScale - SizeChange;
+    }
     public void Update()
     {
         if (Input.GetKeyDown(KeyCode.LeftControl))
@@ -26,19 +33,25 @@ public class Crouch : MonoBehaviour
         {
             _crouchUnPressed = true;
         }
+        if (crouch && !Input.GetKey(KeyCode.LeftControl))
+            _crouchUnPressed = true;
+        
     }
+    
     public void FixedUpdate()
     {
         if (_crouchPressed)
         {
-            Player.transform.localScale = Player.transform.localScale - SizeChange;
+            crouch = true;
+            Player.transform.localScale = _crouchedScale;
             _crouchPressed = false;
             Allcrouch = false;
             SpeedChange.Invoke();
         }
         if (_crouchUnPressed)
         {
-            Player.transform.localScale = Player.transform.localScale + SizeChange;
+            crouch = false;
+            Player.transform.localScale = _originalScale;
             Player.transform.localPosition.Set(Player.transform.localPosition.x, - 6.11f, Player.transform.localPosition.z);
             _crouchUnPressed = false;
             Allcrouch = true;
