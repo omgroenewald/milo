@@ -85,6 +85,7 @@ namespace OMG.Assets.Scripts
             }
             if (click && !ia.CanUse2)
                 SetText(ia.TryUseText);
+            Debug.Log($"After interact raycast {ia.Owned}");
         }
 
         public void EnableRotate(GameObject obj)
@@ -134,6 +135,7 @@ namespace OMG.Assets.Scripts
             //use item
             o.Use(Dump);
             o.Animate();
+            Debug.Log($"after interact with {o.Owned}");
             Debug.Log($"useable items {OwnedItems.Count}", this);
             OwnedItems.ForEach(_ => print($"I picked up {_}"));
             if (o.EndLevel)

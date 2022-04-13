@@ -17,12 +17,12 @@ namespace OMG.Assets.Scripts
         private bool _newDeltaObtained = false;
 
 
-
         public void Rotate(GameObject objectToRotate)
         {
             //remove previous rotation objects
             Clear();
             //move object to rotation location
+
             objectToRotate.transform.position = RotationLocation.position;
             Debug.Log($"{objectToRotate} in position");
             _objectToRotate = objectToRotate;
