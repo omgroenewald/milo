@@ -26,8 +26,29 @@ namespace OMG.Assets.Scripts
         public bool KeepAfterUse;
         public bool AllowZoom;
         public bool CanCraft;
+        /// <summary>
+        /// Should always use my location for new crafted object.
+        /// </summary>
+        public bool PrimaryObject;
         public InteractionObject CraftResult;
         public InteractionObject NeedToCraft;
+
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            var collisionObject = collision.gameObject.GetComponent<InteractionObject>();
+
+            if (collisionObject != null && !Owned)
+            {
+                Craft(collisionObject);
+            }
+        }
+
+        public void Awake()
+        {
+            _dump = GameObject.FindGameObjectsWithTag("Dump").First().transform;
+        }
+
         public bool UseGravity
         {
             get => gameObject.GetComponent<Rigidbody>()?.useGravity ?? false;
@@ -35,6 +56,10 @@ namespace OMG.Assets.Scripts
             {
                 var gravity = gameObject.GetComponent<Rigidbody>();
                 if (gravity != null)
+                {
+                    gravity.useGravity = value;
+                }
+                if (gravity = null)
                 {
                     gravity.useGravity = value;
                 }
@@ -47,28 +72,26 @@ namespace OMG.Assets.Scripts
         public Animation animation;
         public List<InteractionObject> RequiredForUse;
         private Transform _dump;
+        public Transform Hands;
 
-
-        public void Use(Transform dump)
+        public void Drop()
+        {
+            Owned = false;
+            Used = false;
+            UseGravity = true;
+        }
+        public void Use()
         {
             if (Used)
                 return;
-            _dump = dump;
             RequiredForUse?.ForEach(_ => _.Owned = _.Owned && _.KeepAfterUse);
             Used = true;
             if (CanPickUp && !Owned)
             {
                 UseGravity = false;
                 Owned = true;
-                
-               
-                
 
-                var render = GetComponentInParent<Renderer>();
-                gameObject.transform.position = dump.position;
-
-                //temp always try crafting on using.
-                //Craft(NeedToCraft);
+                Hide();
                 Debug.Log($"after use {Owned}");
                 //if (render != null)
                 //{
@@ -85,7 +108,7 @@ namespace OMG.Assets.Scripts
                 return this;
             }
             //can't craft using this item
-            if (NeedToCraft != craftFrom || !craftFrom.Owned)
+            if (NeedToCraft != craftFrom )
             {
                 Debug.Log("Can't craft with or don't own", NeedToCraft);
                 return this;
@@ -95,19 +118,33 @@ namespace OMG.Assets.Scripts
             Used = true;
             craftFrom.Used = true;
             Owned = false;
-            craftFrom.Owned = false;                    
-            CraftResult.Owned = true;
+            craftFrom.Owned = false;
+            //CraftResult.Owned = true;
 
-            CraftResult.gameObject.transform.position = gameObject.transform.position;
-            Hide(_dump);
-            craftFrom.Hide(_dump);
-            Debug.Log( $"End craft own = {Owned}");
+            CraftResult.gameObject.transform.position = ChooseCraftPosition(craftFrom);
+            CraftResult.UseGravity = true;
+            Debug.Log($"old object position {gameObject.transform.position}", gameObject);
+            Debug.Log($"craft position {CraftResult.gameObject.transform.position}", CraftResult);
+            Debug.Log($"dump position {_dump.position}", _dump);
+
+            Hide();
+            craftFrom.Hide();
             return CraftResult;
         }
 
-        public InteractionObject Hide(Transform dump)
+        private Vector3 ChooseCraftPosition(InteractionObject craftFrom)
         {
-            gameObject.transform.position = dump.position;
+            if (craftFrom.PrimaryObject) 
+                return CraftResult.transform.position;  //Other object is primary don't use my location
+            return (gameObject.transform.position == _dump.position) 
+                ? CraftResult.transform.position   //I'm in dump don't put Craft object here.
+                : gameObject.transform.position;  //Set Craft object location to my location
+
+        }
+
+        public InteractionObject Hide()
+        {
+            gameObject.transform.position = _dump.position;
             return this;
         }
         public void Print(Text thetext)
@@ -130,7 +167,12 @@ namespace OMG.Assets.Scripts
 
         }
 
-
+        public void Throw(Transform Hands)
+        {
+            Owned = false;
+            Used = false;
+            UseGravity = true;
+        }
 
     }
 }

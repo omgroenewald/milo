@@ -74,6 +74,8 @@ namespace OMG.Assets.Scripts
 
         public void Rotate(float rotateLeftRight, float rotateUpDown)
         {
+            if (!InRotation)
+                return; 
             //useUpdate = false;
 
             //Unsure of how much below code changes outcome.

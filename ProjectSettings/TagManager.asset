@@ -9,6 +9,7 @@ TagManager:
   - MainDoor
   - DrawerA
   - UIDisplayText
+  - Dump
   layers:
   - Default
   - TransparentFX

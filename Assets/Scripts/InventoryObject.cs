@@ -1,15 +1,16 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace OMG.Assets.Scripts
 {
     public class InventoryObject : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler, IDragHandler, IDropHandler, IEndDragHandler, IBeginDragHandler
     {
+        private readonly Color DB = new Color(0.1f, 0.27f, 0.59f, 0.43f);
+        private readonly Color LB = new Color(0.1f, 0.27f, 0.44f, 0.35f);
 
-        SpriteRenderer sprite;
-        Color target = Color.red;
         private InteractionObject _iaObject;
-        private UnityEngine.UI.Image _image;
+        private Image _image;
         private bool _loaded = false;
         private LevelManager _levelManager;
         private Vector2 _startPosition;
@@ -40,6 +41,10 @@ namespace OMG.Assets.Scripts
             }
         }
 
+        public void SetSelected(bool active)
+        {
+            GetComponentInParent<Image>().color = (active) ? DB : LB;
+        }
         public void Clear()
         {
             if (!_loaded)

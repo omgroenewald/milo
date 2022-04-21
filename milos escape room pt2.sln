@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32106.194
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{65BD0268-7CF5-BD5B-AD62-5B969A0886E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiloGameTester", "..\MiloGameTester\MiloGameTester.csproj", "{1E10BC60-0100-49B1-A99A-B4008257E522}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scripts", "Scripts.csproj", "{C36296F8-59F9-D7E3-825E-09189FF782F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,15 +15,12 @@ Global
 		{65BD0268-7CF5-BD5B-AD62-5B969A0886E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65BD0268-7CF5-BD5B-AD62-5B969A0886E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65BD0268-7CF5-BD5B-AD62-5B969A0886E1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1E10BC60-0100-49B1-A99A-B4008257E522}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1E10BC60-0100-49B1-A99A-B4008257E522}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1E10BC60-0100-49B1-A99A-B4008257E522}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1E10BC60-0100-49B1-A99A-B4008257E522}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C36296F8-59F9-D7E3-825E-09189FF782F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C36296F8-59F9-D7E3-825E-09189FF782F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C36296F8-59F9-D7E3-825E-09189FF782F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C36296F8-59F9-D7E3-825E-09189FF782F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {F8130CC6-9FAB-413D-8E81-0CFC2A5D6F73}
 	EndGlobalSection
 EndGlobal

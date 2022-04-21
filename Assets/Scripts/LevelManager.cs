@@ -1,13 +1,12 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
-using Newtonsoft.Json;
-using System.IO;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace OMG.Assets.Scripts
 {
@@ -22,20 +21,32 @@ namespace OMG.Assets.Scripts
         public UnityEvent HoverUseable;
         public UnityEvent IsUsing;
         public UnityEvent LevelDone;
+        float t_vmove;
+        float t_hmove;
         //public List<UnityEngine.UI.Image> InventorySlots = new List<UnityEngine.UI.Image>();
         public List<InventoryObject> InventorySlots;
         public Transform Dump;
+        public Transform Hands;
         public UnityEvent<string> TextChange;
         public UnityEvent<GameObject> RotateObject;
         public Cams Player;
         public Camera MainCamera;
         public Camera RotationCamera;
+        public Image ObjectInUseImage;
+        public Sprite HandSprite;
+        public Transform EHBS;
 
+        float Throwforce = 2000f;
         //should find a better way of doing this
         public Sprite EmptySlot;
         public static string LoadText;
-        
-       
+        private int _objectInUse = 0;
+        private Sprite[] _spriteScroll;
+        public InteractionObject ObjectInUse => (_objectInUse > 0 && _objectInUse<=OwnedItems.Count) ? OwnedItems[_objectInUse - 1]:null;
+        public Sprite SpriteInUse => ObjectInUse?.Sprite ?? HandSprite;
+        private bool _Drop = false;
+        private bool _throw = false;
+
         [JsonProperty]
         public List<InteractionObject> OwnedItems => Objects.Where(_ => _.Owned).ToList();
         [JsonProperty]
@@ -43,9 +54,12 @@ namespace OMG.Assets.Scripts
 
         public void Start()
         {
+            _spriteScroll = new Sprite[4];
+            _spriteScroll[0] = HandSprite;
             Objects = GameObject.FindObjectsOfType<InteractionObject>().ToList();
             Player = GameObject.FindObjectOfType<Cams>();
-            
+            _objectInUse = 1;
+
             Debug.Log($"interactional objects found {Objects.Count}");
             Debug.Log($"inventory objects found {InventorySlots.Count}");
             UpdateInventoryBag();
@@ -73,7 +87,7 @@ namespace OMG.Assets.Scripts
                 if (!click)
                 {
                     //Can interact but click is not pressed
-                    
+
                 }
                 else
                 {
@@ -130,10 +144,9 @@ namespace OMG.Assets.Scripts
         /// <param name="gObj">Underlying game object</param>
         private void InteractWithObject(InteractionObject o)
         {
-
             Debug.Log("in interact", this);
             //use item
-            o.Use(Dump);
+            o.Use();
             o.Animate();
             Debug.Log($"after interact with {o.Owned}");
             Debug.Log($"useable items {OwnedItems.Count}", this);
@@ -152,9 +165,13 @@ namespace OMG.Assets.Scripts
             InventorySlots.ForEach(slot => slot.Clear());
 
             OwnedItems                                                    //All interactive objects
-                .Select((_, i) => new { index = i, iaObject =_ })     //get the index and the sprite 
+                .Select((_, i) => new { index = i, iaObject = _ })     //get the index and the sprite 
                 .ToList()
-                .ForEach(_ => InventorySlots[_.index].InteractionObject = _.iaObject);    //set the correct inventory slot
+                .ForEach(_ =>
+                {
+                    InventorySlots[_.index].InteractionObject = _.iaObject;
+                    _spriteScroll[_.index+1] = _.iaObject.Sprite;
+                });    //set the correct inventory slot
 
         }
 
@@ -163,11 +180,14 @@ namespace OMG.Assets.Scripts
 
             var save = new GameSave()
             {
-                Level = new Level(){
+                Level = new Level()
+                {
                     Identity = SceneManager.GetActiveScene().name,
-                    OwnedItems = this.OwnedItems.Select(_=>_.Identity),
-                    UsedItems = this.UsedItems.Select(_=>_.Identity) },
-                Player = new Scripts.Player(){
+                    OwnedItems = this.OwnedItems.Select(_ => _.Identity),
+                    UsedItems = this.UsedItems.Select(_ => _.Identity)
+                },
+                Player = new Scripts.Player()
+                {
                     PositionX = Player.player.position.x,
                     PositionY = Player.player.position.y,
                     PositionZ = Player.player.position.z,
@@ -176,7 +196,7 @@ namespace OMG.Assets.Scripts
                 }
             };
             File.WriteAllText(fileName, JsonConvert.SerializeObject(save));
-           
+
         }
         public void Load(string fileName, bool loadLevel)
         {
@@ -185,13 +205,19 @@ namespace OMG.Assets.Scripts
             string saveText = File.ReadAllText(fileName);
             var saveGame = JsonConvert.DeserializeObject<GameSave>(saveText);
             LoadText = fileName;
-            if(loadLevel)
+            if (loadLevel)
                 SceneManager.LoadScene(saveGame.Level.Identity);
 
-            saveGame.Level.OwnedItems.ToList().ForEach(owned => Objects.First(_ => _.Identity == owned).Hide(Dump).Owned = true);
-            saveGame.Level.UsedItems.ToList().ForEach(used => Objects.First(_ => _.Identity == used).Hide(Dump).Used = true);
+            saveGame.Level.OwnedItems.ToList().ForEach(owned => Objects.First(_ => _.Identity == owned).Hide().Owned = true);
+            saveGame.Level.UsedItems.ToList().ForEach(used => Objects.First(_ => _.Identity == used).Hide().Used = true);
             UpdateInventoryBag();
 
+        }
+        private void UpdateHotBoxSelected()
+        {
+            InventorySlots.ForEach(_=>_.SetSelected(false));
+            if (_objectInUse > 0)
+                InventorySlots[_objectInUse - 1].SetSelected(true);
         }
 
         // Update is called once per frame
@@ -203,13 +229,52 @@ namespace OMG.Assets.Scripts
             }
             if (Input.GetKeyDown(KeyCode.T))
             {
-                Load("blah.sav",true);
+                Load("blah.sav", true);
             }
+            var mousescroll = Input.mouseScrollDelta.y;
+            if (mousescroll != 0)
+            {
+                _objectInUse -= (int)mousescroll;
+                if (_objectInUse < 1)
+                    _objectInUse = 1;
+                if (_objectInUse > 4)
+                    _objectInUse = 4;
+                UpdateHotBoxSelected();
+            }
+            if (Input.GetKeyDown(KeyCode.C))
+                _Drop = true;
+            if (Input.GetKeyDown(KeyCode.R))
+                _throw = true;
+            t_hmove = Input.GetAxis("Vertical");
+            t_vmove = Input.GetAxis("Horizontal");
         }
-    
+
         void FixedUpdate()
         {
-           
+            if (_Drop)
+            {
+                _Drop = false;
+                if (ObjectInUse != null)
+                {
+                    ObjectInUse.transform.position = Hands.position;
+                    ObjectInUse.Drop();
+                    UpdateInventoryBag();
+                }
+            }
+            if (_throw)
+            {
+                _throw = false;
+                if (ObjectInUse != null)
+                {
+                    
+                    Vector3 t_targetvelocty = MainCamera.transform.TransformDirection(Vector3.forward);
+                    Debug.Log(t_targetvelocty);
+                    ObjectInUse.transform.position = Hands.position;
+                    ObjectInUse.GetComponent<Rigidbody>().AddForce(t_targetvelocty * Throwforce);
+                    ObjectInUse.Drop();
+                    UpdateInventoryBag();
+                }
+            }
         }
     }
 }
